@@ -1,0 +1,12 @@
+Name,Firm,Email,Website,Source,State,Timestamp,Name Verified,Firm Verified,Email Verified,Website Verified,Confidence Score
+Stephen Bilkis,,,,justia,New York,2025-05-27T15:50:41.623017,True,False,False,False,0.2
+Michael Bersani,,,,justia,New York,2025-05-27T15:50:41.630144,True,False,False,False,0.2
+James C. Napoli,,,,justia,New York,2025-05-27T15:50:41.651341,True,False,False,False,0.2
+James Hacker,,,,justia,New York,2025-05-27T15:50:41.657410,True,False,False,False,0.2
+Samantha C. Riggi,,,,justia,New York,2025-05-27T15:50:41.663502,True,False,False,False,0.2
+Mark A. Siesel,,,,justia,New York,2025-05-27T15:50:41.669910,True,False,False,False,0.2
+Seni Popat,,,,justia,New York,2025-05-27T15:50:41.675557,True,False,False,False,0.2
+Rick Nicotra,,,,justia,New York,2025-05-27T15:50:41.681125,True,False,False,False,0.2
+Michael Bersani,,,,justia,New York,2025-05-27T15:50:41.684643,True,False,False,False,0.2
+"Carmen ""Jack"" Giordano",,,,justia,New York,2025-05-27T15:50:41.687854,True,False,False,False,0.2
+Test Attorney,Test Firm,test@example.com,https://example.com,test,California,2025-05-27T15:50:44.700239,True,True,True,True,1.0

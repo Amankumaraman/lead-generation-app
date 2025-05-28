@@ -1,0 +1,257 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attorney Lead Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: #f8f9fa; padding-top: 20px; }
+        .result-item { border-left: 4px solid #007bff; padding: 10px; margin-bottom: 10px; background-color: #fff; border-radius: 5px; }
+        .confidence-high { background-color: #28a745; color: #fff; }
+        .confidence-medium { background-color: #fd7e14; color: #fff; }
+        .confidence-low { background-color: #dc3545; color: #fff; }
+        #resultsContainer { max-height: 300px; overflow-y: auto; }
+        .error-message { color: #dc3545; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-person-lines-fill"></i> Attorney Lead Generator</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="searchForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="practiceArea" class="form-label">Practice Area</label>
+                                    <input type="text" class="form-control" id="practiceArea" required placeholder="e.g., Personal Injury">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="states" class="form-label">States</label>
+                                    <select class="form-select" multiple id="states" required>
+                                        <option value="California">California</option>
+                                        <option value="New York">New York</option>
+                                        <option value="Texas">Texas</option>
+                                    </select>
+                                    <small class="text-muted">Hold Ctrl/Cmd to select multiple states</small>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-primary" id="searchBtn">
+                                    <i class="bi bi-search"></i> Generate Leads
+                                </button>
+                                <button type="button" class="btn btn-success" id="exportCsvBtn" disabled>
+                                    <i class="bi bi-file-earmark-excel"></i> Export CSV
+                                </button>
+                                <button type="button" class="btn btn-warning" id="exportSheetsBtn" disabled>
+                                    <i class="bi bi-google"></i> Export to Google Sheets
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-graph-up"></i> Progress</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="progress">
+                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar" style="width: 0%">0%</div>
+                        </div>
+                        <div id="progressMessage" class="text-muted">Ready to start...</div>
+                        <div id="errorMessage" class="error-message" style="display: none;"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="bi bi-list-ul"></i> Results
+                            <span id="resultCount" class="badge bg-light text-dark">0</span></h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultsContainer">
+                            <div class="text-center text-muted" id="noResultsMessage">
+                                No results yet. Start a search to see attorney leads.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const searchForm = document.getElementById("searchForm");
+            const searchBtn = document.getElementById("searchBtn");
+            const exportCsvBtn = document.getElementById("exportCsvBtn");
+            const exportSheetsBtn = document.getElementById("exportSheetsBtn");
+            const progressBar = document.getElementById("progressBar");
+            const progressMessage = document.getElementById("progressMessage");
+            const errorMessage = document.getElementById("errorMessage");
+            const resultsContainer = document.getElementById("resultsContainer");
+            const noResultsMessage = document.getElementById("noResultsMessage");
+            const resultCount = document.getElementById("resultCount");
+
+            let eventSource = null;
+            let leads = [];
+
+            searchForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const practiceArea = document.getElementById("practiceArea").value.trim();
+                const states = Array.from(document.getElementById("states").selectedOptions).map(opt => opt.value);
+
+                if (!practiceArea || !states.length) {
+                    errorMessage.style.display = "block";
+                    errorMessage.textContent = "Please enter a practice area and select at least one state";
+                    return;
+                }
+
+                leads = [];
+                resultsContainer.innerHTML = "";
+                noResultsMessage.style.display = "block";
+                resultCount.textContent = "0";
+                progressBar.style.width = "0%";
+                progressBar.textContent = "0%";
+                progressBar.classList.add("progress-bar-animated", "progress-bar-striped");
+                progressBar.classList.remove("bg-success", "bg-danger");
+                progressMessage.textContent = "Starting search...";
+                errorMessage.style.display = "none";
+                searchBtn.disabled = true;
+                searchBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Searching...';
+                exportCsvBtn.disabled = true;
+                exportSheetsBtn.disabled = true;
+
+                if (eventSource) eventSource.close();
+
+                const url = `/api/search?states=${encodeURIComponent(JSON.stringify(states))}&practice_area=${encodeURIComponent(practiceArea)}`;
+                eventSource = new EventSource(url);
+
+                eventSource.onmessage = (e) => {
+                    try {
+                        const data = JSON.parse(e.data);
+                        if (data.status === "complete") {
+                            progressBar.classList.remove("progress-bar-animated", "progress-bar-striped");
+                            progressBar.classList.add("bg-success");
+                            progressBar.style.width = "100%";
+                            progressBar.textContent = "100%";
+                            progressMessage.textContent = "Search complete";
+                            searchBtn.disabled = false;
+                            searchBtn.innerHTML = '<i class="bi bi-search"></i> Generate Leads';
+                            exportCsvBtn.disabled = !leads.length;
+                            exportSheetsBtn.disabled = !leads.length;
+                            if (!leads.length) {
+                                errorMessage.style.display = "block";
+                                errorMessage.textContent = "No attorneys found.";
+                            }
+                            eventSource.close();
+                            return;
+                        }
+
+                        if (data.error) throw new Error(data.error);
+
+                        if (data.progress) {
+                            const percentage = Math.min(data.progress.percentage, 100);
+                            progressBar.style.width = `${percentage}%`;
+                            progressBar.textContent = `${percentage}%`;
+                            progressMessage.textContent = data.progress.message;
+                        }
+
+                        if (data.result) {
+                            noResultsMessage.style.display = "none";
+                            leads.push(data.result);
+                            resultCount.textContent = leads.length;
+                            addResultToUI(data.result);
+                        }
+                    } catch (err) {
+                        errorMessage.style.display = "block";
+                        errorMessage.textContent = `Error: ${err.message}`;
+                    }
+                };
+
+                eventSource.onerror = (e) => {
+                    progressBar.classList.remove("progress-bar-animated", "progress-bar-striped");
+                    progressBar.classList.add("bg-danger");
+                    progressBar.style.width = "100%";
+                    progressBar.textContent = "Error";
+                    progressMessage.textContent = "Connection lost";
+                    errorMessage.style.display = "block";
+                    errorMessage.textContent = "Search failed. Please try again.";
+                    searchBtn.disabled = false;
+                    searchBtn.innerHTML = '<i class="bi bi-search"></i> Generate Leads';
+                    exportCsvBtn.disabled = !leads.length;
+                    exportSheetsBtn.disabled = !leads.length;
+                    if (eventSource) eventSource.close();
+                };
+            });
+
+            function addResultToUI(attender) {
+                const confidence = attender.confidence_score || 0;
+                const confidenceClass = confidence > 0.7 ? "confidence-high" : confidence > 0.4 ? "confidence-medium" : "confidence-low";
+
+                const div = document.createElement("div");
+                div.className = "result-item";
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5>${escapeHtml(attender.name || "N/A")}</h5>
+                            <p class="mb-1"><strong>Firm:</strong> ${escapeHtml(attender.firm || "N/A")}</p>
+                            <p class="mb-1"><strong>Email:</strong> ${escapeHtml(attender.email || "N/A")}</p>
+                            <p class="mb-1"><strong>Website:</strong> ${
+                                attender.website ? `<a href="${escapeHtml(attender.website)}" target="_blank">${escapeHtml(attender.website)}</a>` : "N/A"
+                            }</p>
+                            <p class="mb-0"><strong>State:</strong> ${escapeHtml(attender.state || "N/A")}</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge ${confidenceClass}">Score: ${Math.round(confidence * 100)}%</span>
+                            <p class="text-muted mt-2 mb-0"><small>${escapeHtml(attender.source || "N/A")}</small></p>
+                        </div>
+                    </div>
+                `;
+                resultsContainer.prepend(div);
+            }
+
+            function escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&apos;'
+                };
+                return text ? String(text).replace(/[&]/g, m => map[m]) : text;
+            }
+
+            exportCsvBtn.addEventListener("click", () => {
+                window.location.href = "/api/export/csv";
+            });
+
+            exportSheetsBtn.addEventListener("click", () => {
+                exportSheetsBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Exporting...';
+                exportSheetsBtn.disabled = true;
+                fetch("/api/export/sheets")
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(`Exported to Google Sheets: ${data.url}`);
+                            window.open(data.url, "_blank");
+                        } else {
+                            alert(`Error: ${data.error}`);
+                        }
+                    })
+                    .catch(err => alert(`Error: ${err.message}`))
+                    .finally(() => {
+                        exportSheetsBtn.innerHTML = '<i class="bi bi-google"></i> Export to Google Sheets';
+                        exportSheetsBtn.disabled = !leads.length;
+                    });
+            });
+        });
+    </script>
+</body>
+</html>

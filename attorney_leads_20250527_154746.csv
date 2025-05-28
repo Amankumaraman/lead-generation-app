@@ -1,0 +1,12 @@
+Name,Firm,Email,Website,Source,State,Timestamp,Name Verified,Firm Verified,Email Verified,Website Verified,Confidence Score
+Ronnie Kashri,,,,justia,California,2025-05-27T15:47:41.481847,True,False,False,False,0.2
+Ron Beck,,,,justia,California,2025-05-27T15:47:41.491186,True,False,False,False,0.2
+Justin Powers,,,,justia,California,2025-05-27T15:47:41.498418,True,False,False,False,0.2
+James Otto Heiting,,,,justia,California,2025-05-27T15:47:41.508260,True,False,False,False,0.2
+Randall R. Walton,,,,justia,California,2025-05-27T15:47:41.524337,True,False,False,False,0.2
+Domingo R. Castillo,,,,justia,California,2025-05-27T15:47:41.628715,True,False,False,False,0.2
+James L. Arrasmith,,,,justia,California,2025-05-27T15:47:41.652216,True,False,False,False,0.2
+Michael Paul Ehline,,,,justia,California,2025-05-27T15:47:41.662912,True,False,False,False,0.2
+John O'Brien,,,,justia,California,2025-05-27T15:47:41.674115,True,False,False,False,0.2
+Joel Gary Selik,,,,justia,California,2025-05-27T15:47:41.684224,True,False,False,False,0.2
+Test Attorney,Test Firm,test@example.com,https://example.com,test,California,2025-05-27T15:47:44.694928,True,True,True,True,1.0

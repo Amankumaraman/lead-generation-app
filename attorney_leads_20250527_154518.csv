@@ -1,0 +1,12 @@
+Name,Firm,Email,Website,Source,State,Timestamp,Name Verified,Firm Verified,Email Verified,Website Verified,Confidence Score
+Judge Charles H. Van Orden,,,,justia,Texas,2025-05-27T15:45:13.016361,True,False,False,False,0.2
+Shane V. Mullen,,,,justia,Texas,2025-05-27T15:45:13.018941,True,False,False,False,0.2
+Eric Reyes,,,,justia,Texas,2025-05-27T15:45:13.024315,True,False,False,False,0.2
+Arturo C. Aguilar,,,,justia,Texas,2025-05-27T15:45:13.033316,True,False,False,False,0.2
+Gregory S Baumgartner,,,,justia,Texas,2025-05-27T15:45:13.042532,True,False,False,False,0.2
+Boe Lynn Bowen,,,,justia,Texas,2025-05-27T15:45:13.045846,True,False,False,False,0.2
+Mark Ryan Thiessen,,,,justia,Texas,2025-05-27T15:45:13.048842,True,False,False,False,0.2
+Louis T. Wierenga,,,,justia,Texas,2025-05-27T15:45:13.052382,True,False,False,False,0.2
+Cheryl Ann Wulf,,,,justia,Texas,2025-05-27T15:45:13.057566,True,False,False,False,0.2
+Patrick Mason Dennis,,,,justia,Texas,2025-05-27T15:45:13.061725,True,False,False,False,0.2
+Test Attorney,Test Firm,test@example.com,https://example.com,test,California,2025-05-27T15:45:16.068014,True,True,True,True,1.0
